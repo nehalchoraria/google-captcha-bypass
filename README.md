@@ -1,4 +1,4 @@
 # google-captcha-bypass
 -- Indevelopment 
 
-By pass google captch using selenium and waston speech 
+Bypass google captcha using selenium and waston speech 
