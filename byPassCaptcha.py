@@ -4,28 +4,28 @@ from selenium.webdriver.common.keys import Keys
 from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.common.by import By
 
-import time
+import os, sys
+import time,requests
 from bs4 import BeautifulSoup
 
-delayTime = 3
+delayTime = 2
 audioToTextDelay = 10
+filename = 'test.mp3'
+byPassUrl = 'https://www.google.com/recaptcha/api2/demo'
+googleIBMLink = 'https://speech-to-text-demo.ng.bluemix.net/'
 
 option = webdriver.ChromeOptions()
 option.add_argument('--disable-notifications')
 option.add_argument("--mute-audio")
+# option.add_experimental_option("debuggerAddress", "127.0.0.1:9222")
 option.add_argument("user-agent=Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.14 Safari/537.36")
 
-# option.add_experimental_option("debuggerAddress", "127.0.0.1:9567")
-driver = webdriver.Chrome(ChromeDriverManager().install(), chrome_options=option)
-
-
 def audioToText(mp3Path):
-    delayTime = 10
 
     driver.execute_script('''window.open("","_blank");''')
     driver.switch_to.window(driver.window_handles[1])
 
-    driver.get('https://speech-to-text-demo.ng.bluemix.net/')
+    driver.get(googleIBMLink)
 
     # Upload file 
     time.sleep(1)
@@ -44,8 +44,14 @@ def audioToText(mp3Path):
 
     return result
 
+def saveFile(content,filename):
+    with open(filename, "wb") as handle:
+        for data in content.iter_content():
+            handle.write(data)
 
-driver.get('https://www.google.com/recaptcha/api2/demo')
+
+driver = webdriver.Chrome(ChromeDriverManager().install(), chrome_options=option)
+driver.get(byPassUrl)
 
 googleClass = driver.find_elements_by_class_name('g-recaptcha')[0]
 outeriframe = googleClass.find_element_by_tag_name('iframe')
@@ -59,7 +65,7 @@ for index in range(len(allIframesLen)):
     driver.switch_to.frame(iframe)
     driver.implicitly_wait(delayTime)
     try:
-        audioBtn = driver.find_element_by_id('recaptcha-audio-button') 
+        audioBtn = driver.find_element_by_id('recaptcha-audio-button') or driver.find_element_by_id('recaptcha-anchor')
         audioBtn.click()
         audioBtnFound = True
         break
@@ -67,15 +73,13 @@ for index in range(len(allIframesLen)):
         pass
 
 if audioBtnFound:
-    pass
-
-
-response = audioToText('/home/synoriq/Desktop/fiverr/1.wav')
-# driver.switch_to.default_content()
-
-# html = driver.page_source
-# soup = BeautifulSoup(html,"html.parser")
-
-# iframe = soup.find('div',{'class':'g-'}).find('iframe')
-# time.sleep(3)
-# print(element)
+    try:
+        href = driver.find_elements_by_class_name('rc-audiochallenge-tdownload-link')[0].get_attribute('href')
+        response = requests.get(href, stream=True)
+        saveFile(response,filename)
+        response = audioToText(os.getcwd() + '/' + filename)
+        driver.find_element_by_id('audio-response').send_keys(response)
+    except:
+        print('Caught. Need to change proxy now')
+else:
+    print('Button not found. This should not happen.')
