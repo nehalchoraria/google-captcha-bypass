@@ -59,6 +59,8 @@ outeriframe.click()
 
 allIframesLen = driver.find_elements_by_tag_name('iframe')
 audioBtnFound = False
+audioBtnIndex = -1
+
 for index in range(len(allIframesLen)):
     driver.switch_to_default_content()
     iframe = driver.find_elements_by_tag_name('iframe')[index]
@@ -68,18 +70,35 @@ for index in range(len(allIframesLen)):
         audioBtn = driver.find_element_by_id('recaptcha-audio-button') or driver.find_element_by_id('recaptcha-anchor')
         audioBtn.click()
         audioBtnFound = True
+        audioBtnIndex = index
         break
     except Exception as e:
         pass
 
 if audioBtnFound:
     try:
-        href = driver.find_elements_by_class_name('rc-audiochallenge-tdownload-link')[0].get_attribute('href')
-        response = requests.get(href, stream=True)
-        saveFile(response,filename)
-        response = audioToText(os.getcwd() + '/' + filename)
-        driver.find_element_by_id('audio-response').send_keys(response)
-    except:
+        while True:
+            href = driver.find_elements_by_class_name('rc-audiochallenge-tdownload-link')[0].get_attribute('href')
+            response = requests.get(href, stream=True)
+            saveFile(response,filename)
+            response = audioToText(os.getcwd() + '/' + filename)
+            print(response)
+
+            driver.switch_to_default_content()
+            iframe = driver.find_elements_by_tag_name('iframe')[audioBtnIndex]
+            driver.switch_to.frame(iframe)
+
+            inputbtn = driver.find_element_by_id('audio-response')
+            inputbtn.send_keys(response)
+            inputbtn.send_keys(Keys.ENTER)
+
+            errorMsg = driver.find_elements_by_class_name('rc-audiochallenge-error-message').text
+            if errorMsg == "":
+                print("Success")
+                break
+             
+    except Exception as e:
+        print(e)
         print('Caught. Need to change proxy now')
 else:
     print('Button not found. This should not happen.')
