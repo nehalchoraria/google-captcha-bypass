@@ -92,8 +92,10 @@ if audioBtnFound:
             inputbtn.send_keys(response)
             inputbtn.send_keys(Keys.ENTER)
 
-            errorMsg = driver.find_elements_by_class_name('rc-audiochallenge-error-message').text
-            if errorMsg == "":
+            time.sleep(delayTime)
+            errorMsg = driver.find_elements_by_class_name('rc-audiochallenge-error-message')[0]
+            print(errorMsg.text,errorMsg.value_of_css_property('display'))
+            if errorMsg.text == "" or errorMsg.value_of_css_property('display') == 'none':
                 print("Success")
                 break
              
