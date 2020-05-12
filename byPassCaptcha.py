@@ -18,7 +18,7 @@ option = webdriver.ChromeOptions()
 option.add_argument('--disable-notifications')
 option.add_argument("--mute-audio")
 # option.add_experimental_option("debuggerAddress", "127.0.0.1:9222")
-option.add_argument("user-agent=Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.14 Safari/537.36")
+option.add_argument("user-agent=Mozilla/5.0 (iPhone; CPU iPhone OS 10_3 like Mac OS X) AppleWebKit/602.1.50 (KHTML, like Gecko) CriOS/56.0.2924.75 Mobile/14E5239e Safari/602.1")
 
 def audioToText(mp3Path):
 
@@ -78,7 +78,7 @@ for index in range(len(allIframesLen)):
 if audioBtnFound:
     try:
         while True:
-            href = driver.find_elements_by_class_name('rc-audiochallenge-tdownload-link')[0].get_attribute('href')
+            href = driver.find_element_by_id('audio-source').get_attribute('src')
             response = requests.get(href, stream=True)
             saveFile(response,filename)
             response = audioToText(os.getcwd() + '/' + filename)
@@ -92,9 +92,9 @@ if audioBtnFound:
             inputbtn.send_keys(response)
             inputbtn.send_keys(Keys.ENTER)
 
-            time.sleep(delayTime)
+            time.sleep(2)
             errorMsg = driver.find_elements_by_class_name('rc-audiochallenge-error-message')[0]
-            print(errorMsg.text,errorMsg.value_of_css_property('display'))
+
             if errorMsg.text == "" or errorMsg.value_of_css_property('display') == 'none':
                 print("Success")
                 break
