@@ -21,7 +21,7 @@ option.add_argument("--mute-audio")
 option.add_argument("user-agent=Mozilla/5.0 (iPhone; CPU iPhone OS 10_3 like Mac OS X) AppleWebKit/602.1.50 (KHTML, like Gecko) CriOS/56.0.2924.75 Mobile/14E5239e Safari/602.1")
 
 def audioToText(mp3Path):
-
+    
     driver.execute_script('''window.open("","_blank");''')
     driver.switch_to.window(driver.window_handles[1])
 
@@ -36,7 +36,7 @@ def audioToText(mp3Path):
     # Audio to text is processing
     time.sleep(audioToTextDelay)
 
-    text = driver.find_element(By.XPATH, '//*[@id="root"]/div/div[6]/div/div/dialog').find_elements_by_tag_name('dd')
+    text = driver.find_element(By.XPATH, '//*[@id="root"]/div/div[6]/div/div/div').find_elements_by_tag_name('span')
     result = " ".join( [ each.text for each in text ] )
 
     driver.close()
@@ -50,7 +50,7 @@ def saveFile(content,filename):
             handle.write(data)
 
 
-driver = webdriver.Chrome(ChromeDriverManager().install(), chrome_options=option)
+driver = webdriver.Chrome(ChromeDriverManager().install(), options=option)
 driver.get(byPassUrl)
 
 googleClass = driver.find_elements_by_class_name('g-recaptcha')[0]
@@ -62,7 +62,7 @@ audioBtnFound = False
 audioBtnIndex = -1
 
 for index in range(len(allIframesLen)):
-    driver.switch_to_default_content()
+    driver.switch_to.default_content()
     iframe = driver.find_elements_by_tag_name('iframe')[index]
     driver.switch_to.frame(iframe)
     driver.implicitly_wait(delayTime)
@@ -84,7 +84,7 @@ if audioBtnFound:
             response = audioToText(os.getcwd() + '/' + filename)
             print(response)
 
-            driver.switch_to_default_content()
+            driver.switch_to.default_content()
             iframe = driver.find_elements_by_tag_name('iframe')[audioBtnIndex]
             driver.switch_to.frame(iframe)
 
